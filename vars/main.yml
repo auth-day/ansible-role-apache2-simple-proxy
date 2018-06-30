@@ -1,0 +1,4 @@
+server_name: 
+cert_file_path: /etc/no
+key_file_path: /etc/no
+ssl_on: "no"

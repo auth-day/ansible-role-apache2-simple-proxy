@@ -1,0 +1,57 @@
+- name: install apache
+  apt: name=apache2 state=latest
+  when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+
+- name: install httpd
+  yum: name=httpd state=latest
+  when: ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux" 
+
+- name: copy proxy conf ssl off
+  template: src=proxy.conf.j2 dest=/etc/apache2/site-available/proxy.conf 
+  when: (ansible_distribution == "Debian" or ansible_distribution == "Ubuntu") and ssl_on == "no"
+  
+- name: copy proxy conf ssl off
+  template: src=proxy.conf.j2 dest=/etc/httpd/conf.d/proxy.conf 
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux") and ssl_on == "no"
+
+- name: copy proxy ssl on 
+  template: src=proxy_ssl.conf.j2 dest=/etc/apache2/site-available/proxy_ssl.conf 
+  when: (ansible_distribution == "Debian" or ansible_distribution == "Ubuntu") and ssl_on == "yes"
+  
+- name: copy proxy ssl on 
+  template: src=proxy_ssl.conf.j2 dest=/etc/httpd/conf.d/proxy_ssl.conf 
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux") and ssl_on == "yes"
+
+- name: enable proxy mod
+  apache2_module: name=proxy state=present 
+  when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu" 
+
+- name: enable proxy_http mod
+  apache2_module: name=proxy_http state=present
+  when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu" 
+
+- name: enable proxy_balancer mod
+  apache2_module: name=proxy_balancer state=present 
+  when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu" 
+
+- name: enable ssl mod 
+  apache2_module: name=ssl state=present 
+  when: (ansible_distribution == "Debian" or ansible_distribution == "Ubuntu") and ssl_on == "yes"
+
+- name: enable proxy site
+  shell: "/usr/sbin/a2ensite proxy.conf" 
+  when: (ansible_distribution == "Debian" or ansible_distribution == "Ubuntu") and ssl_on == "no"
+
+- name: enable proxy ssl site 
+  shell: "/usr/sbin/a2ensite proxy_ssl.conf"
+  when: (ansible_distribution == "Debian" or ansible_distribution == "Ubuntu") and ssl_on == "yes"
+
+- name: restart apache2
+  service: name=apache2 state=restarted enabled=yes
+  when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu" 
+
+- name: restart httpd
+  service: name=httpd state=restarted enabled=yes
+  when: ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux" 
+
+

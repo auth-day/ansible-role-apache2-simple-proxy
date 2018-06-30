@@ -1,0 +1,33 @@
+<VirtualHost *:80>
+        ServerName {{ server_name }}
+        Redirect / https://{{ server_name }}
+</VirtualHost>
+
+<VirtualHost _default_:443>
+        ServerName {{ server_name }}
+
+        DocumentRoot /var/www/html
+
+        ProxyPreserveHost On
+        ProxyPass / http://localhost:8080/
+        ProxyPassReverse / http://localhost:8080/
+
+        SSLEngine on
+
+        SSLCertificateFile {{ cert_file_path }}
+        SSLCertificateKeyFile {{ key_file_path }}
+
+        <FilesMatch "\.(cgi|shtml|phtml|php)$">
+                SSLOptions +StdEnvVars
+        </FilesMatch>
+        <Directory /usr/lib/cgi-bin>
+                SSLOptions +StdEnvVars
+        </Directory>
+
+        BrowserMatch "MSIE [2-6]" \
+                nokeepalive ssl-unclean-shutdown \
+                downgrade-1.0 force-response-1.0
+        BrowserMatch "MSIE [17-9]" ssl-unclean-shutdownn \
+                downgrade-1.0 force-response-1.0
+        BrowserMatch "MSIE [17-9]" ssl-unclean-shutdown
+</VirtualHost>
